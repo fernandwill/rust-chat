@@ -1,0 +1,27 @@
+# Compiled files
+/target/
+
+# Executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Debug files
+*.pdb
+
+# Rust/Cargo specific
+Cargo.lock
+**/*.rs.bk
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
