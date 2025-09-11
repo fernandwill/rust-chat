@@ -1,51 +1,74 @@
 use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
+use tokio_tungstenite::tungstenite::protocol::Message;
 use futures_util::{StreamExt, SinkExt};
-use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "127.0.0.1:8080";
-    let listener = TcpListener::bind(addr).await?;
-    println!("WebSocket server running on ws://{addr}");
+    let listener = TcpListener::bind("127.0.0.1:8080").await?;
+    println!("WebSocket server running at ws://127.0.0.1:8080");
 
-    while let Ok((stream, peer)) = listener.accept().await {
-        tokio::spawn(handle_connection(stream, peer));
-    }
+    loop {
+        let (stream, addr) = listener.accept().await?;
+        println!("New TCP connection: {}", addr);
 
-    Ok(())
-}
+        tokio::spawn(async move {
+            match accept_async(stream).await {
+                Ok(mut ws_stream) => {
+                    println!("✅ WebSocket connection established: {}", addr);
 
-async fn handle_connection(stream: tokio::net::TcpStream, peer: SocketAddr) {
-    println!("New connection: {peer}");
+                    while let Some(msg) = ws_stream.next().await {
+                        match msg {
+                            Ok(Message::Text(text)) => {
+                                println!("{} says: {}", addr, text);
+                                // Echo the message back
+                                if let Err(e) = ws_stream.send(Message::Text(text)).await {
+                                    eprintln!("Send error: {}", e);
+                                    break;
+                                }
+                            }
+                            Ok(Message::Binary(data)) => {
+                                println!("{} sent binary data ({} bytes)", addr, data.len());
+                                // Echo binary data back
+                                if let Err(e) = ws_stream.send(Message::Binary(data)).await {
+                                    eprintln!("Send error: {}", e);
+                                    break;
+                                }
+                            }
+                            Ok(Message::Ping(payload)) => {
+                                println!("Received ping from {}", addr);
+                                // Respond to ping with pong
+                                if let Err(e) = ws_stream.send(Message::Pong(payload)).await {
+                                    eprintln!("Pong send error: {}", e);
+                                    break;
+                                }
+                            }
+                            Ok(Message::Pong(_)) => {
+                                println!("Received pong from {}", addr);
+                                // Pong received, connection is alive
+                            }
+                            Ok(Message::Close(close_frame)) => {
+                                println!("Received close frame from {}: {:?}", addr, close_frame);
+                                // Respond to close frame and break
+                                let _ = ws_stream.send(Message::Close(close_frame)).await;
+                                break;
+                            }
+                            Ok(Message::Frame(_)) => {
+                                // Raw frames are handled internally by tungstenite
+                            }
+                            Err(e) => {
+                                eprintln!("Recv error from {}: {}", addr, e);
+                                break;
+                            }
+                        }
+                    }
 
-    let ws_stream = match accept_async(stream).await {
-        Ok(ws) => ws,
-        Err(e) => {
-            eprintln!("WebSocket handshake failed with {peer}: {e}");
-            return;
-        }
-    };
-
-    let (mut write, mut read) = ws_stream.split();
-
-    // Echo loop
-    while let Some(msg) = read.next().await {
-        match msg {
-            Ok(msg) => {
-                println!("{peer}: {msg}");
-
-                if let Err(e) = write.send(msg).await {
-                    eprintln!("Error sending to {peer}: {e}");
-                    break;
+                    println!("🔌 Connection closed: {}", addr);
+                }
+                Err(e) => {
+                    eprintln!("Handshake failed with {}: {}", addr, e);
                 }
             }
-            Err(e) => {
-                eprintln!("Error receiving from {peer}: {e}");
-                break;
-            }
-        }
+        });
     }
-
-    println!("Connection closed: {peer}");
 }
