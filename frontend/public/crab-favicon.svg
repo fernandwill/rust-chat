@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Crab body -->
+  <ellipse cx="50" cy="55" rx="20" ry="15" fill="#ff6b35" stroke="#d4521f" stroke-width="2"/>
+  
+  <!-- Crab shell pattern -->
+  <ellipse cx="50" cy="50" rx="18" ry="12" fill="#ff8c42" stroke="#d4521f" stroke-width="1"/>
+  <ellipse cx="50" cy="48" rx="15" ry="9" fill="#ffa726"/>
+  
+  <!-- Left claw -->
+  <ellipse cx="25" cy="45" rx="8" ry="6" fill="#ff6b35" stroke="#d4521f" stroke-width="2" transform="rotate(-20 25 45)"/>
+  <ellipse cx="20" cy="42" rx="5" ry="4" fill="#ff8c42" transform="rotate(-30 20 42)"/>
+  
+  <!-- Right claw -->
+  <ellipse cx="75" cy="45" rx="8" ry="6" fill="#ff6b35" stroke="#d4521f" stroke-width="2" transform="rotate(20 75 45)"/>
+  <ellipse cx="80" cy="42" rx="5" ry="4" fill="#ff8c42" transform="rotate(30 80 42)"/>
+  
+  <!-- Left legs -->
+  <line x1="35" y1="60" x2="30" y2="70" stroke="#d4521f" stroke-width="3" stroke-linecap="round"/>
+  <line x1="40" y1="62" x2="35" y2="72" stroke="#d4521f" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="64" x2="40" y2="74" stroke="#d4521f" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Right legs -->
+  <line x1="65" y1="60" x2="70" y2="70" stroke="#d4521f" stroke-width="3" stroke-linecap="round"/>
+  <line x1="60" y1="62" x2="65" y2="72" stroke="#d4521f" stroke-width="3" stroke-linecap="round"/>
+  <line x1="55" y1="64" x2="60" y2="74" stroke="#d4521f" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Eyes -->
+  <circle cx="45" cy="40" r="4" fill="#2c3e50"/>
+  <circle cx="55" cy="40" r="4" fill="#2c3e50"/>
+  <circle cx="46" cy="38" r="1.5" fill="#ffffff"/>
+  <circle cx="56" cy="38" r="1.5" fill="#ffffff"/>
+  
+  <!-- Eye stalks -->
+  <line x1="45" y1="40" x2="45" y2="35" stroke="#ff6b35" stroke-width="2" stroke-linecap="round"/>
+  <line x1="55" y1="40" x2="55" y2="35" stroke="#ff6b35" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Mouth -->
+  <path d="M 47 52 Q 50 55 53 52" stroke="#d4521f" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>
