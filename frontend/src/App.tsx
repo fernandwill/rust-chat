@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import ChatArea from "./components/ChatArea";
 import UserList from "./components/UserList";
+import LoginPage from "./components/LoginPage";
 import "./styles/Rustcord.css";
 
 interface Message {
@@ -32,6 +33,8 @@ function App() {
   const [input, setInput] = useState("");
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [activeChannel, setActiveChannel] = useState('general');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ username: string; avatar: string; provider: string } | null>(null);
 
   // Mock data for demonstration
   const channels: Channel[] = [
@@ -53,7 +56,36 @@ function App() {
 
   const onlineCount = users.filter(user => user.status !== 'offline').length;
 
+  const handleLogin = (provider: 'google' | 'github') => {
+    // Mock authentication - in a real app, this would handle OAuth flow
+    const mockUsers = {
+      google: { username: 'GoogleUser', avatar: '🔵', provider: 'Google' },
+      github: { username: 'GitHubDev', avatar: '⚫', provider: 'GitHub' }
+    };
+    
+    console.log(`Authenticating with ${provider}...`);
+    
+    // Simulate OAuth flow
+    setTimeout(() => {
+      setCurrentUser(mockUsers[provider]);
+      setIsAuthenticated(true);
+      console.log(`✅ Authenticated with ${provider}`);
+    }, 1500);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    if (ws) {
+      ws.close();
+      setWs(null);
+    }
+    setMessages([]);
+    setConnectionStatus('disconnected');
+  };
+
   useEffect(() => {
+    if (!isAuthenticated) return;
     // Connect to WebSocket server
     setConnectionStatus('connecting');
     const socket = new WebSocket("ws://127.0.0.1:8080");
@@ -66,7 +98,7 @@ function App() {
       const welcomeMessage: Message = {
         id: Date.now().toString(),
         author: 'Rustcord',
-        content: 'Welcome to Rustcord! 🦀 Connected to WebSocket server.',
+        content: 'Welcome to Rustcord! Connected to WebSocket server.',
         timestamp: new Date(),
         avatar: '🦀'
       };
@@ -101,10 +133,10 @@ function App() {
       // Add to local messages
       const userMessage: Message = {
         id: Date.now().toString(),
-        author: 'RustDev',
+        author: currentUser?.username || 'User',
         content: input,
         timestamp: new Date(),
-        avatar: '🦀'
+        avatar: currentUser?.avatar || '👤'
       };
       setMessages((prev) => [...prev, userMessage]);
       setInput("");
@@ -124,6 +156,11 @@ function App() {
   };
 
   const activeChannelName = channels.find(ch => ch.id === activeChannel)?.name || 'general';
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   return (
     <div className="rustcord-app">
@@ -150,6 +187,8 @@ function App() {
       <UserList
         users={users}
         onlineCount={onlineCount}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
     </div>
   );

@@ -16,7 +16,7 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
   return (
     <div className="sidebar">
       <div className="server-header">
-        <h2>🦀 Rustcord</h2>
+        <h2>Rustcord</h2>
       </div>
       
       <div className="channels-section">

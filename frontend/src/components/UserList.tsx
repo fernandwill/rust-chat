@@ -11,9 +11,11 @@ interface User {
 interface UserListProps {
   users: User[];
   onlineCount: number;
+  currentUser?: { username: string; avatar: string; provider: string } | null;
+  onLogout?: () => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ users, onlineCount }) => {
+const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, onLogout }) => {
 
   const getStatusColor = (status: User['status']) => {
     switch (status) {
@@ -30,6 +32,28 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount }) => {
 
   return (
     <div className="user-list">
+      {/* Current User Panel */}
+      {currentUser && (
+        <div className="current-user-panel">
+          <div className="current-user-info">
+            <div className="user-avatar-container">
+              <div className="user-avatar">{currentUser.avatar}</div>
+              <div 
+                className="user-status-indicator"
+                style={{ backgroundColor: '#43b581' }}
+              />
+            </div>
+            <div className="user-info">
+              <div className="user-name">{currentUser.username}</div>
+              <div className="user-provider">via {currentUser.provider}</div>
+            </div>
+          </div>
+          <button className="logout-button" onClick={onLogout} title="Logout">
+            🚪
+          </button>
+        </div>
+      )}
+
       <div className="user-list-header">
         <span>ONLINE — {onlineCount}</span>
       </div>
