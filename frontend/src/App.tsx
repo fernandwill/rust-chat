@@ -74,14 +74,9 @@ function App() {
     };
 
     socket.onmessage = (event) => {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        author: 'Server',
-        content: event.data,
-        timestamp: new Date(),
-        avatar: '🖥️'
-      };
-      setMessages((prev) => [...prev, newMessage]);
+      // Server responses are now hidden from client display
+      // Only server logs will show the encrypted messages
+      console.log("Server response received (hidden from chat):", event.data);
     };
 
     socket.onclose = () => {
