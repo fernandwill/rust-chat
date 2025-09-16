@@ -14,6 +14,7 @@ use tower_http::cors::CorsLayer;
 
 use dotenv::dotenv;
 use std::env;
+use urlencoding;
 
 
 use aes::Aes256;
@@ -234,6 +235,39 @@ async fn github_callback(
     (StatusCode::INTERNAL_SERVER_ERROR, "OAuth exchange failed").into_response()
 }
 
+// Redirect to the frontend application
+async fn serve_frontend() -> impl IntoResponse {
+    Redirect::to("http://localhost:5173")
+}
+
+// Initiate Google OAuth flow
+async fn initiate_google_oauth() -> impl IntoResponse {
+    let client_id = env::var("GOOGLE_CLIENT_ID").unwrap_or_default();
+    let redirect_uri = env::var("GOOGLE_REDIRECT_URI").unwrap_or_else(|_| "http://localhost:8080/auth/google/callback".to_string());
+    
+    let auth_url = format!(
+        "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope=openid%20profile%20email&access_type=offline&prompt=consent",
+        client_id,
+        urlencoding::encode(&redirect_uri)
+    );
+    
+    Redirect::to(&auth_url)
+}
+
+// Initiate GitHub OAuth flow
+async fn initiate_github_oauth() -> impl IntoResponse {
+    let client_id = env::var("GITHUB_CLIENT_ID").unwrap_or_default();
+    let redirect_uri = env::var("GITHUB_REDIRECT_URI").unwrap_or_else(|_| "http://localhost:8080/auth/github/callback".to_string());
+    
+    let auth_url = format!(
+        "https://github.com/login/oauth/authorize?client_id={}&redirect_uri={}&scope=user:email%20read:user",
+        client_id,
+        urlencoding::encode(&redirect_uri)
+    );
+    
+    Redirect::to(&auth_url)
+}
+
 async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
     ws.on_upgrade(handle_socket)
 }
@@ -302,9 +336,12 @@ async fn main() {
     let state = Arc::new(Mutex::new(Vec::<User>::new()));
 
     let app = Router::new()
+        .route("/", get(serve_frontend))
+        .route("/auth/google", get(initiate_google_oauth))
+        .route("/auth/github", get(initiate_github_oauth))
         .route("/auth/google/callback", get(google_callback))
         .route("/auth/github/callback", get(github_callback))
-        .route("/", get(ws_handler))
+        .route("/ws", get(ws_handler))
         .with_state(state)
         .layer(CorsLayer::permissive());
 
