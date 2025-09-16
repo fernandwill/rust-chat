@@ -34,14 +34,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   const handleGoogleLogin = () => {
     console.log('Google OAuth login initiated');
-    // Redirect to Google OAuth
-    window.location.href = getGoogleOAuthUrl();
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = 'http://localhost:8080/auth/google';
   };
 
   const handleGitHubLogin = () => {
     console.log('GitHub OAuth login initiated');
-    // Redirect to GitHub OAuth
-    window.location.href = getGitHubOAuthUrl();
+    // Redirect to backend GitHub OAuth endpoint
+    window.location.href = 'http://localhost:8080/auth/github';
   };
 
   return (
