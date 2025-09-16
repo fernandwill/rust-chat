@@ -15,7 +15,6 @@ use tower_http::cors::CorsLayer;
 use dotenv::dotenv;
 use std::env;
 
-use tokio::net::TcpListener;
 
 use aes::Aes256;
 use cbc::{Encryptor, Decryptor};
@@ -309,7 +308,6 @@ async fn main() {
         .with_state(state)
         .layer(CorsLayer::permissive());
 
-    let _listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
     println!("WebSocket server running at ws://127.0.0.1:8080");
 
     if let Err(e) = axum::Server::bind(&"127.0.0.1:8080".parse().unwrap())
