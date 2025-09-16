@@ -42,7 +42,6 @@ function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [activeChannel, setActiveChannel] = useState('general');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -86,7 +85,6 @@ function App() {
       setWs(null);
     }
     setMessages([]);
-    setConnectionStatus('disconnected');
   };
 
   useEffect(() => {
@@ -119,12 +117,10 @@ function App() {
     if (!isAuthenticated || !aesKey) return;
     
     // Connect to WebSocket server (now on port 8081)
-    setConnectionStatus('connecting');
     const socket = new WebSocket("ws://127.0.0.1:8081");
 
     socket.onopen = () => {
       console.log("✅ Connected to WebSocket");
-      setConnectionStatus('connected');
       
       // Add welcome message
       const welcomeMessage: Message = {
@@ -170,11 +166,10 @@ function App() {
 
     socket.onclose = () => {
       console.log("❌ Disconnected from WebSocket");
-      setConnectionStatus('disconnected');
     };
 
     socket.onerror = () => {
-      setConnectionStatus('disconnected');
+      console.log("❌ WebSocket error");
     };
 
     setWs(socket);
@@ -231,12 +226,6 @@ function App() {
         <Route path="/" element={
           isAuthenticated ? (
             <div className="rustcord-app">
-              <div className={`connection-status ${connectionStatus}`}>
-                {connectionStatus === 'connected' && '🟢 Connected'}
-                {connectionStatus === 'connecting' && '🟡 Connecting...'}
-                {connectionStatus === 'disconnected' && '🔴 Disconnected'}
-              </div>
-
               <Sidebar
                 channels={channels}
                 activeChannel={activeChannel}

@@ -45,7 +45,6 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, on
             </div>
             <div className="user-info">
               <div className="user-name">{currentUser.username}</div>
-              <div className="user-provider">via {currentUser.provider}</div>
             </div>
           </div>
           <button className="logout-button" onClick={onLogout} title="Logout">

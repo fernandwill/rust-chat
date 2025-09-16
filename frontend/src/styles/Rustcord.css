@@ -352,12 +352,6 @@ body {
   flex: 1;
 }
 
-.user-provider {
-  color: #72767d;
-  font-size: 12px;
-  font-style: italic;
-}
-
 .logout-button {
   background: #f04747;
   border: none;
@@ -464,31 +458,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #1a1d21;
-}
-
-/* Connection Status */
-.connection-status {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  z-index: 1000;
-}
-
-.connection-status.connected {
-  background-color: #43b581;
-  color: #ffffff;
-}
-
-.connection-status.disconnected {
-  background-color: #f04747;
-  color: #ffffff;
-}
-
-.connection-status.connecting {
-  background-color: #faa61a;
-  color: #ffffff;
 }
