@@ -1,17 +1,7 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getGoogleOAuthUrl, getGitHubOAuthUrl } from '../utils/oauth';
+import React from 'react';
 import '../styles/LoginPage.css';
 
-interface LoginPageProps {
-  onLoginSuccess: (user: any) => void;
-}
-
-const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-
-  
+const LoginPage: React.FC = () => {
 
   const handleGoogleLogin = () => {
     console.log('Google OAuth login initiated');

@@ -6,6 +6,7 @@ import UserList from "./components/UserList";
 import LoginPage from "./components/LoginPage";
 import OAuthCallback from "./components/OAuthCallback";
 import "./styles/Rustcord.css";
+import { generateAesKey, encryptMessageAes, decryptMessageAes } from "./utils/aes";
 
 interface Message {
   id: string;
@@ -45,6 +46,7 @@ function App() {
   const [activeChannel, setActiveChannel] = useState('general');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [aesKey, setAesKey] = useState<CryptoKey | null>(null);
 
   // Mock data for demonstration
   const channels: Channel[] = [
@@ -99,6 +101,23 @@ function App() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    
+    // Generate AES key for encryption
+    const initEncryption = async () => {
+      try {
+        const key = await generateAesKey("rustchatserver2024_aes_secure");
+        setAesKey(key);
+      } catch (error) {
+        console.error("Failed to generate AES key:", error);
+      }
+    };
+    
+    initEncryption();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !aesKey) return;
+    
     // Connect to WebSocket server (now on port 8081)
     setConnectionStatus('connecting');
     const socket = new WebSocket("ws://127.0.0.1:8081");
@@ -118,10 +137,35 @@ function App() {
       setMessages([welcomeMessage]);
     };
 
-    socket.onmessage = (event) => {
-      // Server responses are now hidden from client display
-      // Only server logs will show the encrypted messages
-      console.log("Server response received (hidden from chat):", event.data);
+    socket.onmessage = async (event) => {
+      try {
+        // Try to decrypt the message
+        const decryptedContent = await decryptMessageAes(event.data, aesKey);
+        console.log("Server response (decrypted):", decryptedContent);
+        
+        // Parse the decrypted message (format: "addr: content")
+        const match = decryptedContent.match(/^([^:]+): (.*)$/);
+        if (match) {
+          const [, addr, content] = match;
+          const message: Message = {
+            id: Date.now().toString(),
+            author: addr,
+            content: content,
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, message]);
+        }
+      } catch (error) {
+        // If decryption fails, treat as plain text
+        console.log("Server response (plain):", event.data);
+        const message: Message = {
+          id: Date.now().toString(),
+          author: 'Server',
+          content: event.data,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, message]);
+      }
     };
 
     socket.onclose = () => {
@@ -136,23 +180,28 @@ function App() {
     setWs(socket);
 
     return () => socket.close();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, aesKey]);
 
-  const sendMessage = () => {
-    if (ws && input.trim() !== "") {
-      // Send to server
-      ws.send(input);
-      
-      // Add to local messages
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        author: currentUser?.username || 'User',
-        content: input,
-        timestamp: new Date(),
-        avatar: currentUser?.avatar || '👤'
-      };
-      setMessages((prev) => [...prev, userMessage]);
-      setInput("");
+  const sendMessage = async () => {
+    if (ws && input.trim() !== "" && aesKey) {
+      try {
+        // Encrypt the message before sending
+        const encryptedMessage = await encryptMessageAes(input, aesKey);
+        ws.send(encryptedMessage);
+        
+        // Add to local messages
+        const userMessage: Message = {
+          id: Date.now().toString(),
+          author: currentUser?.username || 'User',
+          content: input,
+          timestamp: new Date(),
+          avatar: currentUser?.avatar || '👤'
+        };
+        setMessages((prev) => [...prev, userMessage]);
+        setInput("");
+      } catch (error) {
+        console.error("Failed to encrypt message:", error);
+      }
     }
   };
 
@@ -174,7 +223,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={
-          !isAuthenticated ? <LoginPage onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />
+          !isAuthenticated ?               <LoginPage /> : <Navigate to="/" />
         } />
         <Route path="/oauth/callback" element={
           <OAuthCallback onLoginSuccess={handleLoginSuccess} />
