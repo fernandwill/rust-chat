@@ -68,11 +68,15 @@ function App() {
 
   const handleLoginSuccess = (user: CurrentUser) => {
     console.log("✅ OAuth login successful", user);
+    localStorage.setItem("currentUser", JSON.stringify(user));
+    localStorage.setItem("isAuthenticated", "true");
     setCurrentUser(user);
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("isAuthenticated");
     setIsAuthenticated(false);
     setCurrentUser(null);
     if (ws) {
@@ -82,6 +86,16 @@ function App() {
     setMessages([]);
     setConnectionStatus('disconnected');
   };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    const storedAuth = localStorage.getItem("isAuthenticated");
+
+    if (storedUser && storedAuth) {
+      setCurrentUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) return;

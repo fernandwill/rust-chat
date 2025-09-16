@@ -52,7 +52,7 @@ const OAuthCallback: React.FC<OAuthCallbackProps> = ({ onLoginSuccess }) => {
     };
     
     handleCallback();
-  }, [searchParams, navigate, onLoginSuccess]);
+  }, [searchParams, navigate]);
   
   if (error) {
     return (

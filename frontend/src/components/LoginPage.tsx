@@ -11,26 +11,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check if we have OAuth parameters in the URL
-    const provider = searchParams.get('provider');
-    const token = searchParams.get('token');
-    const username = searchParams.get('username');
-    const email = searchParams.get('email');
-    
-    // If we have all the required parameters, log the user in
-    if (provider && token && username && email) {
-      const user = {
-        id: `oauth_${provider}_${Date.now()}`,
-        username,
-        email,
-        provider,
-      };
-      
-      onLoginSuccess(user);
-      navigate('/');
-    }
-  }, [searchParams, onLoginSuccess, navigate]);
+  
 
   const handleGoogleLogin = () => {
     console.log('Google OAuth login initiated');

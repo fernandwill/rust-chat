@@ -4,29 +4,19 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Redirect},
     routing::get,
-    Json, Router,
+    Router,
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
+use urlencoding;
 
 use crate::auth::{OAuthProvider, get_oauth_config, exchange_code_for_token, get_user_profile};
-
-#[derive(Deserialize)]
-struct AuthRequest {
-    provider: String,
-}
 
 #[derive(Deserialize)]
 struct OAuthCallbackQuery {
     code: String,
 }
-
-#[derive(Serialize)]
-struct AuthResponse {
-    url: String,
-}
-
 
 // Redirect to the frontend application
 async fn serve_frontend() -> impl IntoResponse {
@@ -34,8 +24,8 @@ async fn serve_frontend() -> impl IntoResponse {
 }
 
 // Initiate OAuth flow
-async fn initiate_oauth(Query(request): Query<AuthRequest>) -> Result<Json<AuthResponse>, StatusCode> {
-    let provider = match request.provider.as_str() {
+async fn initiate_oauth(Path(provider): Path<String>) -> Result<Redirect, StatusCode> {
+    let provider = match provider.as_str() {
         "google" => OAuthProvider::Google,
         "github" => OAuthProvider::GitHub,
         _ => return Err(StatusCode::BAD_REQUEST),
@@ -60,7 +50,7 @@ async fn initiate_oauth(Query(request): Query<AuthRequest>) -> Result<Json<AuthR
         },
     };
     
-    Ok(Json(AuthResponse { url: auth_url }))
+    Ok(Redirect::to(&auth_url))
 }
 
 // Handle OAuth callback
