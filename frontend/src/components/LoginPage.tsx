@@ -1,21 +1,47 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getGoogleOAuthUrl, getGitHubOAuthUrl } from '../utils/oauth';
 import '../styles/LoginPage.css';
 
 interface LoginPageProps {
-  onLogin: (provider: 'google' | 'github') => void;
+  onLoginSuccess: (user: any) => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if we have OAuth parameters in the URL
+    const provider = searchParams.get('provider');
+    const token = searchParams.get('token');
+    const username = searchParams.get('username');
+    const email = searchParams.get('email');
+    
+    // If we have all the required parameters, log the user in
+    if (provider && token && username && email) {
+      const user = {
+        id: `oauth_${provider}_${Date.now()}`,
+        username,
+        email,
+        provider,
+      };
+      
+      onLoginSuccess(user);
+      navigate('/');
+    }
+  }, [searchParams, onLoginSuccess, navigate]);
+
   const handleGoogleLogin = () => {
     console.log('Google OAuth login initiated');
-    // In a real app, this would redirect to Google OAuth
-    onLogin('google');
+    // Redirect to Google OAuth
+    window.location.href = getGoogleOAuthUrl();
   };
 
   const handleGitHubLogin = () => {
     console.log('GitHub OAuth login initiated');
-    // In a real app, this would redirect to GitHub OAuth
-    onLogin('github');
+    // Redirect to GitHub OAuth
+    window.location.href = getGitHubOAuthUrl();
   };
 
   return (

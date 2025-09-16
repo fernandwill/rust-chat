@@ -11,7 +11,7 @@ interface User {
 interface UserListProps {
   users: User[];
   onlineCount: number;
-  currentUser?: { username: string; avatar: string; provider: string } | null;
+  currentUser?: { username: string; avatar?: string; provider: string } | null;
   onLogout?: () => void;
 }
 

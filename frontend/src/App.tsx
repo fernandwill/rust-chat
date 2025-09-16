@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import ChatArea from "./components/ChatArea";
 import UserList from "./components/UserList";
 import LoginPage from "./components/LoginPage";
+import OAuthCallback from "./components/OAuthCallback";
 import "./styles/Rustcord.css";
 
 interface Message {
@@ -27,6 +29,14 @@ interface User {
   role?: string;
 }
 
+interface CurrentUser {
+  id: string;
+  username: string;
+  email: string;
+  avatar?: string;
+  provider: string;
+}
+
 function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,7 +44,7 @@ function App() {
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [activeChannel, setActiveChannel] = useState('general');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ username: string; avatar: string; provider: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
   // Mock data for demonstration
   const channels: Channel[] = [
@@ -56,21 +66,10 @@ function App() {
 
   const onlineCount = users.filter(user => user.status !== 'offline').length;
 
-  const handleLogin = (provider: 'google' | 'github') => {
-    // Mock authentication - in a real app, this would handle OAuth flow
-    const mockUsers = {
-      google: { username: 'GoogleUser', avatar: '🔵', provider: 'Google' },
-      github: { username: 'GitHubDev', avatar: '⚫', provider: 'GitHub' }
-    };
-    
-    console.log(`Authenticating with ${provider}...`);
-    
-    // Simulate OAuth flow
-    setTimeout(() => {
-      setCurrentUser(mockUsers[provider]);
-      setIsAuthenticated(true);
-      console.log(`✅ Authenticated with ${provider}`);
-    }, 1500);
+  const handleLoginSuccess = (user: CurrentUser) => {
+    console.log("✅ OAuth login successful", user);
+    setCurrentUser(user);
+    setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
@@ -86,9 +85,9 @@ function App() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    // Connect to WebSocket server
+    // Connect to WebSocket server (now on port 8081)
     setConnectionStatus('connecting');
-    const socket = new WebSocket("ws://127.0.0.1:8080");
+    const socket = new WebSocket("ws://127.0.0.1:8081");
 
     socket.onopen = () => {
       console.log("✅ Connected to WebSocket");
@@ -157,40 +156,54 @@ function App() {
 
   const activeChannelName = channels.find(ch => ch.id === activeChannel)?.name || 'general';
 
-  // Show login page if not authenticated
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />;
-  }
-
   return (
-    <div className="rustcord-app">
-      <div className={`connection-status ${connectionStatus}`}>
-        {connectionStatus === 'connected' && '🟢 Connected'}
-        {connectionStatus === 'connecting' && '🟡 Connecting...'}
-        {connectionStatus === 'disconnected' && '🔴 Disconnected'}
-      </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={
+          !isAuthenticated ? <LoginPage onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />
+        } />
+        <Route path="/oauth/callback" element={
+          <OAuthCallback onLoginSuccess={handleLoginSuccess} />
+        } />
+        <Route path="/" element={
+          isAuthenticated ? (
+            <div className="rustcord-app">
+              <div className={`connection-status ${connectionStatus}`}>
+                {connectionStatus === 'connected' && '🟢 Connected'}
+                {connectionStatus === 'connecting' && '🟡 Connecting...'}
+                {connectionStatus === 'disconnected' && '🔴 Disconnected'}
+              </div>
 
-      <Sidebar
-        channels={channels}
-        activeChannel={activeChannel}
-        onChannelSelect={handleChannelSelect}
-      />
+              <Sidebar
+                channels={channels}
+                activeChannel={activeChannel}
+                onChannelSelect={handleChannelSelect}
+              />
 
-      <ChatArea
-        channelName={activeChannelName}
-        messages={messages}
-        input={input}
-        onInputChange={setInput}
-        onKeyPress={handleKeyPress}
-      />
+              <ChatArea
+                channelName={activeChannelName}
+                messages={messages}
+                input={input}
+                onInputChange={setInput}
+                onKeyPress={handleKeyPress}
+              />
 
-      <UserList
-        users={users}
-        onlineCount={onlineCount}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-      />
-    </div>
+              <UserList
+                users={users}
+                onlineCount={onlineCount}
+                currentUser={currentUser ? {
+                  ...currentUser,
+                  avatar: currentUser.avatar || '👤'
+                } : null}
+                onLogout={handleLogout}
+              />
+            </div>
+          ) : (
+            <Navigate to="/login" />
+          )
+        } />
+      </Routes>
+    </Router>
   );
 }
 
