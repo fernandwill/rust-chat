@@ -123,7 +123,7 @@ function App() {
     setWs(socket);
 
     return () => socket.close();
-  }, []);
+  }, [isAuthenticated]);
 
   const sendMessage = () => {
     if (ws && input.trim() !== "") {
