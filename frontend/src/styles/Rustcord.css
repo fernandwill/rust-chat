@@ -1,4 +1,4 @@
-/* Rustcord - Discord-inspired styling */
+﻿/* Rustcord - Discord-inspired styling */
 
 * {
   box-sizing: border-box;
@@ -353,9 +353,10 @@ body {
 
 /* Current User Panel */
 .current-user-panel {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
   background: #292b2f;
   border-radius: 8px;
   padding: 12px;
@@ -367,27 +368,56 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1;
+  width: 100%;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: default;
+  transition: background-color 0.15s ease;
 }
 
-.logout-button {
-  background: #f04747;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  font-size: 16px;
+.current-user-info:hover {
+  background-color: #34373c;
+}
+
+.current-user-info .user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 18px;
+}
+
+.current-user-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.user-control-btn {
   width: 32px;
   height: 32px;
-  cursor: pointer;
-  display: flex;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: #b9bbbe;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.logout-button:hover {
-  background: #d73636;
-  transform: scale(1.05);
+.user-control-btn:hover {
+  background-color: #34373c;
+  color: #dcddde;
+}
+
+.user-control-btn.danger {
+  color: #f04747;
+}
+
+.user-control-btn.danger:hover {
+  background-color: rgba(240, 71, 71, 0.15);
+  color: #ff6d6d;
 }
 
 .user-list-header {
@@ -476,4 +506,101 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #1a1d21;
+}\n.logout-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
+
+.confirm-secondary,
+.confirm-primary {
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.confirm-secondary {
+  background: #2f3136;
+  color: #dcddde;
+}
+
+.confirm-secondary:hover {
+  background: #35373c;
+}
+
+.confirm-primary {
+  background: #f04747;
+  color: #ffffff;
+}
+
+.confirm-primary:hover {
+  background: #d73737;
+}
+
+.logout-confirm-popover {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: calc(100% + 10px);
+  background: #18191c;
+  border: 1px solid #202225;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+  text-align: left;
+  z-index: 30;
+}
+
+.logout-confirm-popover h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.logout-confirm-popover p {
+  font-size: 13px;
+  color: #b5bac1;
+  margin-bottom: 16px;
+}
+
+.logout-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-secondary,
+.confirm-primary {
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.confirm-secondary {
+  background: #2f3136;
+  color: #dcddde;
+}
+
+.confirm-secondary:hover {
+  background: #35373c;
+}
+
+.confirm-primary {
+  background: #f04747;
+  color: #ffffff;
+}
+
+.confirm-primary:hover {
+  background: #d73737;
+}
+
+
