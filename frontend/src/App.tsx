@@ -38,6 +38,15 @@ interface CurrentUser {
   provider: string;
 }
 
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map(part => part[0]?.toUpperCase() || '')
+    .join('')
+    .slice(0, 2);
+};
+
 function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -58,17 +67,17 @@ function App() {
   ];
 
   const users: User[] = [
-    { id: '1', username: 'RustDev', status: 'online', avatar: '🦀', role: 'Admin' },
-    { id: '2', username: 'CodeMaster', status: 'online', avatar: '👨‍💻' },
-    { id: '3', username: 'ChatBot', status: 'idle', avatar: '🤖' },
-    { id: '4', username: 'WebDev', status: 'dnd', avatar: '🌐' },
-    { id: '5', username: 'Sleepy', status: 'offline', avatar: '😴' },
+    { id: '1', username: 'RustDev', status: 'online', avatar: 'RD', role: 'Admin' },
+    { id: '2', username: 'CodeMaster', status: 'online', avatar: 'CM' },
+    { id: '3', username: 'ChatBot', status: 'idle', avatar: 'CB' },
+    { id: '4', username: 'WebDev', status: 'dnd', avatar: 'WD' },
+    { id: '5', username: 'Sleepy', status: 'offline', avatar: 'SL' },
   ];
 
   const onlineCount = users.filter(user => user.status !== 'offline').length;
 
   const handleLoginSuccess = (user: CurrentUser) => {
-    console.log("✅ OAuth login successful", user);
+    console.log("OAuth login successful", user);
     localStorage.setItem("currentUser", JSON.stringify(user));
     localStorage.setItem("isAuthenticated", "true");
     setCurrentUser(user);
@@ -120,17 +129,16 @@ function App() {
     const socket = new WebSocket("ws://127.0.0.1:8081");
 
     socket.onopen = () => {
-      console.log("✅ Connected to WebSocket");
+      console.log("Connected to WebSocket");
       
       // Add welcome message
       const welcomeMessage: Message = {
         id: Date.now().toString(),
         author: 'Rustcord',
-        content: 'Welcome to Rustcord! Connected to WebSocket server.',
+        content: 'Welcome to Rustcord! Start chatting securely.',
         timestamp: new Date(),
-        avatar: '🦀'
       };
-      setMessages([welcomeMessage]);
+      setMessages((prev) => [...prev, welcomeMessage]);
     };
 
     socket.onmessage = async (event) => {
@@ -165,11 +173,11 @@ function App() {
     };
 
     socket.onclose = () => {
-      console.log("❌ Disconnected from WebSocket");
+      console.log("Disconnected from WebSocket");
     };
 
     socket.onerror = () => {
-      console.log("❌ WebSocket error");
+      console.log("WebSocket error");
     };
 
     setWs(socket);
@@ -190,7 +198,7 @@ function App() {
           author: currentUser?.username || 'User',
           content: input,
           timestamp: new Date(),
-          avatar: currentUser?.avatar || '👤'
+          avatar: currentUser ? currentUser.avatar || getInitials(currentUser.username) : undefined
         };
         setMessages((prev) => [...prev, userMessage]);
         setInput("");
@@ -218,7 +226,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={
-          !isAuthenticated ?               <LoginPage /> : <Navigate to="/" />
+          !isAuthenticated ? <LoginPage /> : <Navigate to="/" />
         } />
         <Route path="/oauth/callback" element={
           <OAuthCallback onLoginSuccess={handleLoginSuccess} />
@@ -245,7 +253,7 @@ function App() {
                 onlineCount={onlineCount}
                 currentUser={currentUser ? {
                   ...currentUser,
-                  avatar: currentUser.avatar || '👤'
+                  avatar: currentUser.avatar || getInitials(currentUser.username)
                 } : null}
                 onLogout={handleLogout}
               />

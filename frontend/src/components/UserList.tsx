@@ -1,4 +1,5 @@
-import React from 'react';
+﻿import React from 'react';
+import { LogOut } from 'lucide-react';
 
 interface User {
   id: string;
@@ -14,6 +15,15 @@ interface UserListProps {
   currentUser?: { username: string; avatar?: string; provider: string } | null;
   onLogout?: () => void;
 }
+
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map(part => part[0]?.toUpperCase() || '')
+    .join('')
+    .slice(0, 2);
+};
 
 const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, onLogout }) => {
 
@@ -37,7 +47,7 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, on
         <div className="current-user-panel">
           <div className="current-user-info">
             <div className="user-avatar-container">
-              <div className="user-avatar">{currentUser.avatar}</div>
+              <div className="user-avatar">{currentUser.avatar || getInitials(currentUser.username)}</div>
               <div 
                 className="user-status-indicator"
                 style={{ backgroundColor: '#43b581' }}
@@ -47,21 +57,21 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, on
               <div className="user-name">{currentUser.username}</div>
             </div>
           </div>
-          <button className="logout-button" onClick={onLogout} title="Logout">
-            🚪
+          <button className="logout-button" onClick={onLogout} title="Logout" aria-label="Logout">
+            <LogOut size={18} />
           </button>
         </div>
       )}
 
       <div className="user-list-header">
-        <span>ONLINE — {onlineCount}</span>
+        <span>ONLINE - {onlineCount}</span>
       </div>
 
       <div className="users-section">
         {onlineUsers.map(user => (
           <div key={user.id} className="user-item">
             <div className="user-avatar-container">
-              <div className="user-avatar">{user.avatar || '👤'}</div>
+              <div className="user-avatar">{user.avatar || getInitials(user.username)}</div>
               <div 
                 className="user-status-indicator"
                 style={{ backgroundColor: getStatusColor(user.status) }}
@@ -78,13 +88,13 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, on
       {offlineUsers.length > 0 && (
         <>
           <div className="user-list-header">
-            <span>OFFLINE — {offlineUsers.length}</span>
+            <span>OFFLINE - {offlineUsers.length}</span>
           </div>
           <div className="users-section">
             {offlineUsers.map(user => (
               <div key={user.id} className="user-item offline">
                 <div className="user-avatar-container">
-                  <div className="user-avatar">{user.avatar || '👤'}</div>
+                  <div className="user-avatar">{user.avatar || getInitials(user.username)}</div>
                   <div 
                     className="user-status-indicator"
                     style={{ backgroundColor: getStatusColor(user.status) }}

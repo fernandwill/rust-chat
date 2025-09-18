@@ -1,4 +1,5 @@
-import React from 'react';
+﻿import React from 'react';
+import { Hash, Volume2, Mic, Headphones, Settings } from 'lucide-react';
 
 interface Channel {
   id: string;
@@ -13,6 +14,17 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSelect }) => {
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map(part => part[0]?.toUpperCase() || '')
+      .join('')
+      .slice(0, 2);
+  };
+
+  const currentUserName = 'RustDev';
+
   return (
     <div className="sidebar">
       <div className="server-header">
@@ -30,7 +42,9 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
             className={`channel-item ${activeChannel === channel.id ? 'active' : ''}`}
             onClick={() => onChannelSelect(channel.id)}
           >
-            <span className="channel-icon">#</span>
+            <span className="channel-icon">
+              <Hash size={18} />
+            </span>
             <span className="channel-name">{channel.name}</span>
           </div>
         ))}
@@ -47,22 +61,30 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
             className={`channel-item ${activeChannel === channel.id ? 'active' : ''}`}
             onClick={() => onChannelSelect(channel.id)}
           >
-            <span className="channel-icon">🔊</span>
+            <span className="channel-icon">
+              <Volume2 size={18} />
+            </span>
             <span className="channel-name">{channel.name}</span>
           </div>
         ))}
       </div>
 
       <div className="user-info">
-        <div className="user-avatar">👤</div>
+        <div className="user-avatar">{getInitials(currentUserName)}</div>
         <div className="user-details">
-          <div className="username">RustDev</div>
+          <div className="username">{currentUserName}</div>
           <div className="user-status">Online</div>
         </div>
         <div className="user-controls">
-          <button className="control-btn">🎤</button>
-          <button className="control-btn">🎧</button>
-          <button className="control-btn">⚙️</button>
+          <button className="control-btn" aria-label="Toggle microphone">
+            <Mic size={16} />
+          </button>
+          <button className="control-btn" aria-label="Toggle headphones">
+            <Headphones size={16} />
+          </button>
+          <button className="control-btn" aria-label="Open settings">
+            <Settings size={16} />
+          </button>
         </div>
       </div>
     </div>

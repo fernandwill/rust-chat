@@ -1,4 +1,15 @@
-import React from 'react';
+﻿import React from 'react';
+import {
+  Bell,
+  Pin,
+  UserPlus,
+  MessageSquare,
+  Inbox,
+  Search,
+  HelpCircle,
+  Plus,
+  Smile
+} from 'lucide-react';
 
 interface Message {
   id: string;
@@ -15,6 +26,15 @@ interface ChatAreaProps {
   onInputChange: (value: string) => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
 }
+
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map(part => part[0]?.toUpperCase() || '')
+    .join('')
+    .slice(0, 2);
+};
 
 const ChatArea: React.FC<ChatAreaProps> = ({
   channelName,
@@ -35,12 +55,27 @@ const ChatArea: React.FC<ChatAreaProps> = ({
           <span className="channel-name">{channelName}</span>
         </div>
         <div className="header-controls">
-          <button className="header-btn">📌</button>
-          <button className="header-btn">👥</button>
-          <button className="header-btn">📞</button>
-          <button className="header-btn">🔍</button>
-          <button className="header-btn">📥</button>
-          <button className="header-btn">❓</button>
+          <button className="header-btn" aria-label="Channel notifications">
+            <Bell size={18} />
+          </button>
+          <button className="header-btn" aria-label="Pin message">
+            <Pin size={18} />
+          </button>
+          <button className="header-btn" aria-label="Invite users">
+            <UserPlus size={18} />
+          </button>
+          <button className="header-btn" aria-label="Open channel activity">
+            <MessageSquare size={18} />
+          </button>
+          <button className="header-btn" aria-label="Open inbox">
+            <Inbox size={18} />
+          </button>
+          <button className="header-btn" aria-label="Search">
+            <Search size={18} />
+          </button>
+          <button className="header-btn" aria-label="Help">
+            <HelpCircle size={18} />
+          </button>
         </div>
       </div>
 
@@ -48,7 +83,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         {messages.map((message) => (
           <div key={message.id} className="message">
             <div className="message-avatar">
-              {message.avatar || '👤'}
+              {message.avatar || getInitials(message.author)}
             </div>
             <div className="message-content">
               <div className="message-header">
@@ -72,8 +107,12 @@ const ChatArea: React.FC<ChatAreaProps> = ({
             onKeyPress={onKeyPress}
           />
           <div className="input-controls">
-            <button className="input-btn">📎</button>
-            <button className="input-btn">😊</button>
+            <button className="input-btn" aria-label="Add attachment">
+              <Plus size={18} />
+            </button>
+            <button className="input-btn" aria-label="Add reaction">
+              <Smile size={18} />
+            </button>
           </div>
         </div>
       </div>
