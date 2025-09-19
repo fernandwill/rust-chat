@@ -19,6 +19,7 @@ const OAuthCallback: React.FC<OAuthCallbackProps> = ({ onLoginSuccess }) => {
         const token = searchParams.get('token');
         const username = searchParams.get('username');
         const email = searchParams.get('email');
+        const avatar = searchParams.get('avatar');
         const oauthError = searchParams.get('error');
         
         // Check if there was an OAuth error
@@ -34,6 +35,7 @@ const OAuthCallback: React.FC<OAuthCallbackProps> = ({ onLoginSuccess }) => {
             id: `oauth_${provider}_${Date.now()}`,
             username,
             email,
+            avatar: avatar || undefined,
             provider,
           };
           

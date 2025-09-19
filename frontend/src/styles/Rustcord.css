@@ -101,11 +101,20 @@ body {
 
 .user-info {
   margin-top: auto;
-  padding: 8px;
+  padding: 12px 8px;
   background-color: #292b2f;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
   border-top: 1px solid #202225;
+  position: relative;
+}
+
+.sidebar-user-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .user-avatar {
@@ -141,6 +150,8 @@ body {
 .user-controls {
   display: flex;
   gap: 4px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .control-btn {
@@ -467,6 +478,13 @@ body {
   font-size: 16px;
 }
 
+.user-avatar-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .user-status-indicator {
   position: absolute;
   bottom: -2px;
@@ -566,6 +584,13 @@ body {
   z-index: 30;
 }
 
+.logout-confirm-popover.sidebar {
+  top: auto;
+  bottom: calc(100% + 10px);
+  left: 8px;
+  right: 8px;
+}
+
 .logout-confirm-popover h4 {
   font-size: 16px;
   font-weight: 600;
@@ -613,5 +638,6 @@ body {
 .confirm-primary:hover {
   background: #d73737;
 }
+
 
 

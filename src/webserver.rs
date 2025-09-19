@@ -83,11 +83,12 @@ async fn oauth_callback(
     
     // Redirect back to the frontend OAuth callback page with user data as query parameters
     let redirect_url = format!(
-        "http://localhost:5173/oauth/callback?provider={}&token={}&username={}&email={}",
+        "http://localhost:5173/oauth/callback?provider={}&token={}&username={}&email={}&avatar={}",
         provider_name,
         urlencoding::encode(&token),
         urlencoding::encode(&user.username),
-        urlencoding::encode(&user.email)
+        urlencoding::encode(&user.email),
+        urlencoding::encode(&user.avatar.as_deref().unwrap_or(""))
     );
     
     Ok(Redirect::to(&redirect_url))

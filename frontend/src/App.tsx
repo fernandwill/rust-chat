@@ -78,6 +78,10 @@ function App() {
 
   const handleLoginSuccess = (user: CurrentUser) => {
     console.log("OAuth login successful", user);
+    // Clear any existing data first
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("isAuthenticated");
+    // Set new user data
     localStorage.setItem("currentUser", JSON.stringify(user));
     localStorage.setItem("isAuthenticated", "true");
     setCurrentUser(user);
@@ -238,6 +242,8 @@ function App() {
                 channels={channels}
                 activeChannel={activeChannel}
                 onChannelSelect={handleChannelSelect}
+                currentUser={currentUser}
+                onLogout={handleLogout}
               />
 
               <ChatArea
@@ -251,11 +257,6 @@ function App() {
               <UserList
                 users={users}
                 onlineCount={onlineCount}
-                currentUser={currentUser ? {
-                  ...currentUser,
-                  avatar: currentUser.avatar || getInitials(currentUser.username)
-                } : null}
-                onLogout={handleLogout}
               />
             </div>
           ) : (
