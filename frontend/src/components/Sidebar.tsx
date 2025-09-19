@@ -28,24 +28,31 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
   };
 
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const confirmRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   const currentUserName = currentUser?.username || 'Guest';
   const displayAvatar = currentUser?.avatar;
   const displayInitials = getInitials(currentUserName);
 
   useEffect(() => {
-    if (!showConfirm) return;
+    if (!showConfirm && !showSettingsMenu) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setShowConfirm(false);
+        setShowSettingsMenu(false);
       }
     };
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (confirmRef.current && !confirmRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (showConfirm && confirmRef.current && !confirmRef.current.contains(target)) {
         setShowConfirm(false);
+      }
+      if (showSettingsMenu && settingsRef.current && !settingsRef.current.contains(target)) {
+        setShowSettingsMenu(false);
       }
     };
 
@@ -56,17 +63,23 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showConfirm]);
+  }, [showConfirm, showSettingsMenu]);
 
   const handleStatusClick = () => {
     console.log('Set custom status');
   };
 
-  const handleSettingsClick = () => {
+  const handleSettingsButtonClick = () => {
+    setShowSettingsMenu(prev => !prev);
+  };
+
+  const handleOpenSettings = () => {
     console.log('Open user settings');
+    setShowSettingsMenu(false);
   };
 
   const handleLogoutClick = () => {
+    setShowSettingsMenu(false);
     setShowConfirm(true);
   };
 
@@ -155,20 +168,28 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
           >
             <Smile size={16} />
           </button>
-          <button
-            className="control-btn"
-            aria-label="Open user settings"
-            onClick={handleSettingsClick}
-          >
-            <Settings size={16} />
-          </button>
-          <button
-            className="control-btn danger"
-            aria-label="Log out"
-            onClick={handleLogoutClick}
-          >
-            <LogOut size={16} />
-          </button>
+          <div className="settings-menu-container" ref={settingsRef}>
+            <button
+              className={`control-btn settings-toggle ${showSettingsMenu ? 'is-open' : ''}`}
+              aria-label="Open user menu"
+              aria-expanded={showSettingsMenu}
+              onClick={handleSettingsButtonClick}
+            >
+              <Settings size={16} />
+            </button>
+            {showSettingsMenu && (
+              <div className="user-action-menu">
+                <button type="button" className="menu-item" onClick={handleOpenSettings}>
+                  <Settings size={14} />
+                  <span>Settings</span>
+                </button>
+                <button type="button" className="menu-item danger" onClick={handleLogoutClick}>
+                  <LogOut size={14} />
+                  <span>Log Out</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {showConfirm && (
