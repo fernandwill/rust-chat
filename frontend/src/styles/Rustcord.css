@@ -1,4 +1,4 @@
-﻿/* Rustcord - Discord-inspired styling */
+/* Rustcord - Discord-inspired styling */
 
 * {
   box-sizing: border-box;
@@ -535,7 +535,8 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #1a1d21;
-}\n.logout-confirm-actions {
+}
+.logout-confirm-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -641,6 +642,163 @@ body {
 
 
 
+
+
+.channel-item.voice {
+  cursor: pointer;
+}
+
+.channel-item.voice.active {
+  color: #ffffff;
+}
+
+.channel-item.voice .voice-connected-indicator {
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #43b581;
+}
+
+.voice-channel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.voice-channel.connected .channel-item.voice {
+  background-color: #393c43;
+  color: #ffffff;
+}
+
+.voice-channel-users {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 32px;
+}
+
+.voice-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.voice-user:hover {
+  background-color: #34373c;
+}
+
+.user-avatar-container.tiny {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  margin-right: 0;
+}
+
+.user-avatar-container.tiny .user-avatar-image {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-avatar.tiny {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #5865f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.user-avatar-container.tiny .user-status-indicator {
+  width: 10px;
+  height: 10px;
+  border-width: 2px;
+  border-color: #2f3136;
+  bottom: -2px;
+  right: -2px;
+}
+
+.voice-user-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.voice-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.voice-user-control {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: #b9bbbe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.voice-user-control:hover {
+  background-color: #34373c;
+  color: #dcddde;
+}
+
+.user-connection-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.user-connection-bar .user-connection-label {
+  margin-bottom: 0;
+}
+
+.user-connection-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8e9297;
+}
+
+.user-connection-label .user-connection-channel {
+  color: #ffffff;
+}
+
+.voice-leave-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  color: #b9bbbe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.voice-leave-btn:hover {
+  background-color: #34373c;
+  color: #dcddde;
+}
+
 .settings-menu-container {
   position: relative;
   display: flex;
@@ -703,3 +861,16 @@ body {
 .control-btn.settings-toggle.is-open svg {
   transform: rotate(90deg);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -52,6 +52,7 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [activeChannel, setActiveChannel] = useState('general');
+  const [activeVoiceChannel, setActiveVoiceChannel] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [aesKey, setAesKey] = useState<CryptoKey | null>(null);
@@ -98,6 +99,7 @@ function App() {
       setWs(null);
     }
     setMessages([]);
+    setActiveVoiceChannel(null);
   };
 
   useEffect(() => {
@@ -219,6 +221,10 @@ function App() {
     }
   };
 
+  const handleVoiceChannelToggle = (channelId: string) => {
+    setActiveVoiceChannel(prev => (prev === channelId ? null : channelId));
+  };
+
   const handleChannelSelect = (channelId: string) => {
     setActiveChannel(channelId);
     // In a real app, you'd load messages for this channel
@@ -241,7 +247,9 @@ function App() {
               <Sidebar
                 channels={channels}
                 activeChannel={activeChannel}
+                activeVoiceChannel={activeVoiceChannel}
                 onChannelSelect={handleChannelSelect}
+                onVoiceChannelToggle={handleVoiceChannelToggle}
                 currentUser={currentUser}
                 onLogout={handleLogout}
               />

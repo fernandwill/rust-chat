@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Hash, Volume2, Mic, Headphones, Settings, Smile, LogOut } from 'lucide-react';
 
 interface Channel {
@@ -10,14 +10,24 @@ interface Channel {
 interface SidebarProps {
   channels: Channel[];
   activeChannel: string;
+  activeVoiceChannel?: string | null;
   onChannelSelect: (channelId: string) => void;
+  onVoiceChannelToggle?: (channelId: string) => void;
   currentUser?: { username: string; avatar?: string; provider?: string; email?: string } | null;
   onLogout?: () => void;
 }
 
 const statusColor = '#43b581';
 
-const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSelect, currentUser, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  channels,
+  activeChannel,
+  activeVoiceChannel,
+  onChannelSelect,
+  onVoiceChannelToggle,
+  currentUser,
+  onLogout
+}) => {
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -35,6 +45,9 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
   const currentUserName = currentUser?.username || 'Guest';
   const displayAvatar = currentUser?.avatar;
   const displayInitials = getInitials(currentUserName);
+  const connectedVoiceChannel = activeVoiceChannel
+    ? channels.find(ch => ch.type === 'voice' && ch.id === activeVoiceChannel)
+    : undefined;
 
   useEffect(() => {
     if (!showConfirm && !showSettingsMenu) return;
@@ -92,6 +105,17 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
     setShowConfirm(false);
   };
 
+  const handleVoiceChannelClick = (channelId: string) => {
+    onVoiceChannelToggle?.(channelId);
+  };
+
+  const handleVoiceKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, channelId: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleVoiceChannelClick(channelId);
+    }
+  };
+
   return (
     <div className="sidebar">
       <div className="server-header">
@@ -122,21 +146,75 @@ const Sidebar: React.FC<SidebarProps> = ({ channels, activeChannel, onChannelSel
           <span>VOICE CHANNELS</span>
         </div>
         
-        {channels.filter(ch => ch.type === 'voice').map(channel => (
-          <div
-            key={channel.id}
-            className={`channel-item ${activeChannel === channel.id ? 'active' : ''}`}
-            onClick={() => onChannelSelect(channel.id)}
-          >
-            <span className="channel-icon">
-              <Volume2 size={18} />
-            </span>
-            <span className="channel-name">{channel.name}</span>
-          </div>
-        ))}
+        {channels.filter(ch => ch.type === 'voice').map(channel => {
+          const isConnected = activeVoiceChannel === channel.id;
+          return (
+            <div key={channel.id} className={`voice-channel ${isConnected ? 'connected' : ''}`}>
+              <div
+                className={`channel-item voice ${isConnected ? 'active' : ''}`}
+                onClick={() => handleVoiceChannelClick(channel.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => handleVoiceKeyDown(event, channel.id)}
+                aria-pressed={isConnected}
+                aria-label={`${isConnected ? 'Leave' : 'Join'} voice channel ${channel.name}`}
+              >
+                <span className="channel-icon">
+                  <Volume2 size={18} />
+                </span>
+                <span className="channel-name">{channel.name}</span>
+                {isConnected && <span className="voice-connected-indicator" aria-hidden="true" />}
+              </div>
+
+              {isConnected && (
+                <div className="voice-channel-users">
+                  <div className="voice-user">
+                    <div className="user-avatar-container tiny">
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={currentUserName} className="user-avatar-image" />
+                      ) : (
+                        <div className="user-avatar tiny">{displayInitials}</div>
+                      )}
+                      <div
+                        className="user-status-indicator"
+                        style={{ backgroundColor: statusColor }}
+                      />
+                    </div>
+                    <div className="voice-user-details">
+                      <span className="voice-user-name">{currentUserName}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="voice-user-control"
+                      aria-label={`Disconnect from ${channel.name}`}
+                      onClick={() => handleVoiceChannelClick(channel.id)}
+                    >
+                      <Mic size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="user-info">
+        {connectedVoiceChannel && (
+          <div className="user-connection-bar">
+            <span className="user-connection-label">
+              Connected to <span className="user-connection-channel">{connectedVoiceChannel.name}</span>
+            </span>
+            <button
+              type="button"
+              className="voice-leave-btn"
+              aria-label={`Leave voice channel ${connectedVoiceChannel.name}`}
+              onClick={() => handleVoiceChannelClick(connectedVoiceChannel.id)}
+            >
+              <Mic size={14} />
+            </button>
+          </div>
+        )}
         <div className="sidebar-user-row">
           <div className="user-avatar-container">
             {displayAvatar ? (
