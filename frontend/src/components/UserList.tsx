@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
-import { LogOut, Mic, Headphones, Settings, Smile } from 'lucide-react';
+import { LogOut, Mic, Headphones, Settings, Smile, Crown } from 'lucide-react';
 
 type UserStatus = 'online' | 'idle' | 'dnd' | 'offline';
 
@@ -161,15 +161,16 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, on
           <div key={user.id} className="user-item">
             <div className="user-avatar-container">
               <div className="user-avatar">{user.avatar || getInitials(user.username)}</div>
+              {user.username === 'RustDev' && (
+                <Crown size={12} className="admin-crown" />
+              )}
               <div
                 className="user-status-indicator"
                 style={{ backgroundColor: statusColorMap[user.status] }}
               />
             </div>
-            <div className="user-info">
-              <div className="user-name">{user.username}</div>
-              {user.role && <div className="user-role">{user.role}</div>}
-            </div>
+            <div className="user-name">{user.username}</div>
+            {user.role && <div className="user-role">{user.role}</div>}
           </div>
         ))}
       </div>
@@ -189,10 +190,8 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, on
                     style={{ backgroundColor: statusColorMap[user.status] }}
                   />
                 </div>
-                <div className="user-info">
-                  <div className="user-name">{user.username}</div>
-                  {user.role && <div className="user-role">{user.role}</div>}
-                </div>
+                <div className="user-name">{user.username}</div>
+                {user.role && <div className="user-role">{user.role}</div>}
               </div>
             ))}
           </div>

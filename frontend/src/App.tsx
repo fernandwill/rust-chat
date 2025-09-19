@@ -67,7 +67,7 @@ function App() {
   ];
 
   const users: User[] = [
-    { id: '1', username: 'RustDev', status: 'online', avatar: 'RD', role: 'Admin' },
+    { id: '1', username: 'RustDev', status: 'online', avatar: 'RD' },
     { id: '2', username: 'CodeMaster', status: 'online', avatar: 'CM' },
     { id: '3', username: 'ChatBot', status: 'idle', avatar: 'CB' },
     { id: '4', username: 'WebDev', status: 'dnd', avatar: 'WD' },
