@@ -786,7 +786,7 @@ body {
   border: none;
   background: none;
   border-radius: 4px;
-  color: #b9bbbe;
+  color: #f04747;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -795,8 +795,8 @@ body {
 }
 
 .voice-leave-btn:hover {
-  background-color: #34373c;
-  color: #dcddde;
+  background-color: rgba(240, 71, 71, 0.15);
+  color: #ff6d6d;
 }
 
 .settings-menu-container {

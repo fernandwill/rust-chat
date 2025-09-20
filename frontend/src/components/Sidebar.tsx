@@ -211,7 +211,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               aria-label={`Leave voice channel ${connectedVoiceChannel.name}`}
               onClick={() => handleVoiceChannelClick(connectedVoiceChannel.id)}
             >
-              <Mic size={14} />
+              <LogOut size={16} />
             </button>
           </div>
         )}
