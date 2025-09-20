@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Hash, Volume2, Mic, Headphones, Settings, Smile, LogOut } from 'lucide-react';
+import { Hash, Volume2, Mic, MicOff, Headphones, Settings, Smile, LogOut } from 'lucide-react';
 
 interface Channel {
   id: string;
@@ -39,6 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const confirmRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
 
@@ -103,6 +104,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const handleCancelLogout = () => {
     setShowConfirm(false);
+  };
+
+  const handleMicToggle = () => {
+    setIsMuted(!isMuted);
+    console.log(isMuted ? 'Microphone unmuted' : 'Microphone muted');
   };
 
   const handleVoiceChannelClick = (channelId: string) => {
@@ -185,11 +191,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     <button
                       type="button"
-                      className="voice-user-control"
-                      aria-label={`Disconnect from ${channel.name}`}
-                      onClick={() => handleVoiceChannelClick(channel.id)}
+                      className={`voice-user-control ${isMuted ? 'muted' : ''}`}
+                      aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+                      onClick={handleMicToggle}
                     >
-                      <Mic size={14} />
+                      {isMuted ? <MicOff size={14} /> : <Mic size={14} />}
                     </button>
                   </div>
                 </div>
@@ -233,8 +239,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
         <div className="user-controls">
-          <button className="control-btn" aria-label="Toggle microphone">
-            <Mic size={16} />
+          <button 
+            className={`control-btn ${isMuted ? 'muted' : ''}`} 
+            aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+            onClick={handleMicToggle}
+          >
+            {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
           </button>
           <button className="control-btn" aria-label="Toggle headphones">
             <Headphones size={16} />

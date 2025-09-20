@@ -431,6 +431,18 @@ body {
   color: #ff6d6d;
 }
 
+/* Muted microphone styling */
+.control-btn.muted,
+.voice-user-control.muted {
+  color: #ed4245;
+}
+
+.control-btn.muted:hover,
+.voice-user-control.muted:hover {
+  color: #ff6b6b;
+  background-color: rgba(237, 66, 69, 0.1);
+}
+
 .user-list-header {
   margin-bottom: 8px;
   color: #8e9297;
