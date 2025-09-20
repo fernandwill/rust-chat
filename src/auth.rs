@@ -32,25 +32,27 @@ pub fn get_oauth_config(provider: &OAuthProvider) -> Option<OAuthConfig> {
         OAuthProvider::Google => {
             let client_id = std::env::var("GOOGLE_CLIENT_ID").ok()?;
             let client_secret = std::env::var("GOOGLE_CLIENT_SECRET").ok()?;
-            let redirect_uri = std::env::var("GOOGLE_REDIRECT_URI").unwrap_or_else(|_| "http://localhost:8080/auth/google/callback".to_string());
-            
+            let redirect_uri = std::env::var("GOOGLE_REDIRECT_URI")
+                .unwrap_or_else(|_| "http://localhost:8080/auth/google/callback".to_string());
+
             Some(OAuthConfig {
                 client_id,
                 client_secret,
                 redirect_uri,
             })
-        },
+        }
         OAuthProvider::GitHub => {
             let client_id = std::env::var("GITHUB_CLIENT_ID").ok()?;
             let client_secret = std::env::var("GITHUB_CLIENT_SECRET").ok()?;
-            let redirect_uri = std::env::var("GITHUB_REDIRECT_URI").unwrap_or_else(|_| "http://localhost:8080/auth/github/callback".to_string());
-            
+            let redirect_uri = std::env::var("GITHUB_REDIRECT_URI")
+                .unwrap_or_else(|_| "http://localhost:8080/auth/github/callback".to_string());
+
             Some(OAuthConfig {
                 client_id,
                 client_secret,
                 redirect_uri,
             })
-        },
+        }
     }
 }
 
@@ -61,7 +63,7 @@ pub async fn exchange_code_for_token(
     config: &OAuthConfig,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    
+
     match provider {
         OAuthProvider::Google => {
             let params = [
@@ -71,18 +73,20 @@ pub async fn exchange_code_for_token(
                 ("grant_type", "authorization_code"),
                 ("redirect_uri", config.redirect_uri.as_str()),
             ];
-            
+
             let res = client
                 .post("https://oauth2.googleapis.com/token")
                 .form(&params)
                 .send()
                 .await?;
-                
+
             let json: serde_json::Value = res.json().await?;
-            let access_token = json["access_token"].as_str().ok_or("No access token in response")?;
-            
+            let access_token = json["access_token"]
+                .as_str()
+                .ok_or("No access token in response")?;
+
             Ok(access_token.to_string())
-        },
+        }
         OAuthProvider::GitHub => {
             let params = [
                 ("client_id", config.client_id.as_str()),
@@ -90,19 +94,21 @@ pub async fn exchange_code_for_token(
                 ("code", code),
                 ("redirect_uri", config.redirect_uri.as_str()),
             ];
-            
+
             let res = client
                 .post("https://github.com/login/oauth/access_token")
                 .header("Accept", "application/json")
                 .form(&params)
                 .send()
                 .await?;
-                
+
             let json: serde_json::Value = res.json().await?;
-            let access_token = json["access_token"].as_str().ok_or("No access token in response")?;
-            
+            let access_token = json["access_token"]
+                .as_str()
+                .ok_or("No access token in response")?;
+
             Ok(access_token.to_string())
-        },
+        }
     }
 }
 
@@ -112,7 +118,7 @@ pub async fn get_user_profile(
     access_token: &str,
 ) -> Result<OAuthUser, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    
+
     match provider {
         OAuthProvider::Google => {
             let res = client
@@ -120,9 +126,9 @@ pub async fn get_user_profile(
                 .header("Authorization", format!("Bearer {}", access_token))
                 .send()
                 .await?;
-                
+
             let json: serde_json::Value = res.json().await?;
-            
+
             Ok(OAuthUser {
                 id: json["id"].as_str().unwrap_or_default().to_string(),
                 username: json["name"].as_str().unwrap_or_default().to_string(),
@@ -130,7 +136,7 @@ pub async fn get_user_profile(
                 avatar: json["picture"].as_str().map(|s| s.to_string()),
                 provider: OAuthProvider::Google,
             })
-        },
+        }
         OAuthProvider::GitHub => {
             let res = client
                 .get("https://api.github.com/user")
@@ -138,9 +144,9 @@ pub async fn get_user_profile(
                 .header("User-Agent", "Rustcord")
                 .send()
                 .await?;
-                
+
             let json: serde_json::Value = res.json().await?;
-            
+
             // Get email separately as it might not be in the user endpoint
             let email = if let Some(email) = json["email"].as_str() {
                 email.to_string()
@@ -168,7 +174,7 @@ pub async fn get_user_profile(
                     Err(_) => "".to_string(),
                 }
             };
-            
+
             Ok(OAuthUser {
                 id: json["id"].to_string(),
                 username: json["login"].as_str().unwrap_or_default().to_string(),
@@ -176,6 +182,6 @@ pub async fn get_user_profile(
                 avatar: json["avatar_url"].as_str().map(|s| s.to_string()),
                 provider: OAuthProvider::GitHub,
             })
-        },
+        }
     }
 }

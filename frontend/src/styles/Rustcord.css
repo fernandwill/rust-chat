@@ -497,6 +497,12 @@ body {
   object-fit: cover;
 }
 
+.user-list .user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
 .user-status-indicator {
   position: absolute;
   bottom: -2px;

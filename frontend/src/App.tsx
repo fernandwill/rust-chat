@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import ChatArea from "./components/ChatArea";
@@ -22,18 +22,79 @@ interface Channel {
   type: 'text' | 'voice';
 }
 
+type UserStatus = 'online' | 'idle' | 'dnd' | 'offline';
+
 interface User {
   id: string;
   username: string;
-  status: 'online' | 'idle' | 'dnd' | 'offline';
+  status: UserStatus;
   avatar?: string;
   role?: string;
+  email?: string;
 }
+
+interface PresenceUserPayload {
+  id: string;
+  username: string;
+  status?: UserStatus;
+  avatar?: string | null;
+  email?: string | null;
+}
+
+interface PresenceSnapshotMessage {
+  type: 'presence_snapshot';
+  users: PresenceUserPayload[];
+}
+
+interface PresenceUpdateMessage {
+  type: 'presence_update';
+  user: PresenceUserPayload;
+}
+
+interface ChatMessageEnvelope {
+  type: 'chat_message';
+  ciphertext: string;
+  author?: string;
+}
+
+type ServerEnvelope = PresenceSnapshotMessage | PresenceUpdateMessage | ChatMessageEnvelope;
+
+const isPresenceSnapshot = (payload: unknown): payload is PresenceSnapshotMessage => {
+  if (!payload || typeof payload !== 'object') {
+    return false;
+  }
+  const data = payload as Record<string, unknown>;
+  return data.type === 'presence_snapshot' && Array.isArray(data.users);
+};
+
+const isPresenceUpdate = (payload: unknown): payload is PresenceUpdateMessage => {
+  if (!payload || typeof payload !== 'object') {
+    return false;
+  }
+  const data = payload as Record<string, unknown>;
+  return data.type === 'presence_update' && typeof data.user === 'object' && data.user !== null;
+};
+
+const isChatMessageEnvelope = (payload: unknown): payload is ChatMessageEnvelope => {
+  if (!payload || typeof payload !== 'object') {
+    return false;
+  }
+  const data = payload as Record<string, unknown>;
+  return data.type === 'chat_message' && typeof data.ciphertext === 'string';
+};
+
+const normalizePresenceUser = (user: PresenceUserPayload): User => ({
+  id: user.id,
+  username: user.username,
+  status: user.status ?? 'offline',
+  avatar: user.avatar ?? undefined,
+  email: user.email ?? undefined,
+});
 
 interface CurrentUser {
   id: string;
   username: string;
-  email: string;
+  email?: string;
   avatar?: string;
   provider: string;
 }
@@ -56,8 +117,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [aesKey, setAesKey] = useState<CryptoKey | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
 
-  // Mock data for demonstration
   const channels: Channel[] = [
     { id: 'general', name: 'general', type: 'text' },
     { id: 'random', name: 'random', type: 'text' },
@@ -67,26 +128,10 @@ function App() {
     { id: 'coding-voice', name: 'Coding Session', type: 'voice' },
   ];
 
-  const mockUsers: User[] = [
-    { id: '1', username: 'RustDev', status: 'online', avatar: 'RD' },
-    { id: '2', username: 'CodeMaster', status: 'online', avatar: 'CM' },
-    { id: '3', username: 'ChatBot', status: 'idle', avatar: 'CB' },
-    { id: '4', username: 'WebDev', status: 'dnd', avatar: 'WD' },
-    { id: '5', username: 'Sleepy', status: 'offline', avatar: 'SL' },
-  ];
-
-  // Add current user to the users list if authenticated
-  const users: User[] = currentUser ? [
-    ...mockUsers,
-    {
-      id: currentUser.id,
-      username: currentUser.username,
-      status: 'online' as const,
-      avatar: currentUser.avatar
-    }
-  ] : mockUsers;
-
-  const onlineCount = users.filter(user => user.status !== 'offline').length;
+  const onlineCount = useMemo(
+    () => users.filter(user => user.status !== 'offline').length,
+    [users]
+  );
 
   const handleLoginSuccess = (user: CurrentUser) => {
     console.log("OAuth login successful", user);
@@ -111,6 +156,7 @@ function App() {
     }
     setMessages([]);
     setActiveVoiceChannel(null);
+    setUsers([]);
   };
 
   useEffect(() => {
@@ -141,7 +187,7 @@ function App() {
 
   useEffect(() => {
     if (!isAuthenticated || !aesKey) return;
-    
+
     // Connect to WebSocket server (now on port 8081)
     const socket = new WebSocket("ws://127.0.0.1:8081");
 
@@ -156,28 +202,81 @@ function App() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, welcomeMessage]);
+
+      if (currentUser) {
+        const presenceMessage = {
+          type: 'presence_update',
+          user: {
+            id: currentUser.id,
+            username: currentUser.username,
+            status: 'online' as UserStatus,
+            avatar: currentUser.avatar,
+            email: currentUser.email,
+          },
+        };
+        socket.send(JSON.stringify(presenceMessage));
+      }
     };
 
     socket.onmessage = async (event) => {
+      let parsed: unknown = null;
       try {
-        // Try to decrypt the message
+        parsed = JSON.parse(event.data) as ServerEnvelope;
+      } catch {
+        parsed = null;
+      }
+
+      if (isPresenceSnapshot(parsed)) {
+        setUsers(parsed.users.map(normalizePresenceUser));
+        return;
+      }
+
+      if (isPresenceUpdate(parsed)) {
+        const nextUser = normalizePresenceUser(parsed.user);
+        setUsers(prev => {
+          const existingIndex = prev.findIndex(user => user.id === nextUser.id);
+          if (existingIndex === -1) {
+            return [...prev, nextUser];
+          }
+          const updated = [...prev];
+          updated[existingIndex] = { ...updated[existingIndex], ...nextUser };
+          return updated;
+        });
+        return;
+      }
+
+      if (isChatMessageEnvelope(parsed)) {
+        try {
+          const decryptedContent = await decryptMessageAes(parsed.ciphertext, aesKey);
+          const message: Message = {
+            id: Date.now().toString(),
+            author: parsed.author || 'Server',
+            content: decryptedContent,
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, message]);
+          return;
+        } catch (err) {
+          console.error('Failed to decrypt chat message payload', err);
+        }
+      }
+
+      try {
         const decryptedContent = await decryptMessageAes(event.data, aesKey);
         console.log("Server response (decrypted):", decryptedContent);
         
-        // Parse the decrypted message (format: "addr: content")
         const match = decryptedContent.match(/^([^:]+): (.*)$/);
         if (match) {
           const [, addr, content] = match;
           const message: Message = {
             id: Date.now().toString(),
             author: addr,
-            content: content,
+            content,
             timestamp: new Date(),
           };
           setMessages((prev) => [...prev, message]);
         }
-      } catch (error) {
-        // If decryption fails, treat as plain text
+      } catch {
         console.log("Server response (plain):", event.data);
         const message: Message = {
           id: Date.now().toString(),
@@ -200,14 +299,14 @@ function App() {
     setWs(socket);
 
     return () => socket.close();
-  }, [isAuthenticated, aesKey]);
+  }, [isAuthenticated, aesKey, currentUser]);
 
   const sendMessage = async () => {
     if (ws && input.trim() !== "" && aesKey) {
       try {
         // Encrypt the message before sending
         const encryptedMessage = await encryptMessageAes(input, aesKey);
-        ws.send(encryptedMessage);
+        ws.send(JSON.stringify({ type: 'chat_message', ciphertext: encryptedMessage }));
         
         // Add to local messages
         const userMessage: Message = {
@@ -276,8 +375,6 @@ function App() {
               <UserList
                 users={users}
                 onlineCount={onlineCount}
-                currentUser={currentUser}
-                onLogout={handleLogout}
               />
             </div>
           ) : (

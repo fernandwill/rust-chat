@@ -2,8 +2,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+interface OAuthUser {
+  id: string;
+  username: string;
+  email?: string;
+  avatar?: string;
+  provider: string;
+}
+
 interface OAuthCallbackProps {
-  onLoginSuccess: (user: any) => void;
+  onLoginSuccess: (user: OAuthUser) => void;
 }
 
 const OAuthCallback: React.FC<OAuthCallbackProps> = ({ onLoginSuccess }) => {
@@ -29,12 +37,12 @@ const OAuthCallback: React.FC<OAuthCallbackProps> = ({ onLoginSuccess }) => {
         }
         
         // Check if we have the required parameters
-        if (provider && token && username && email) {
+        if (provider && token && username) {
           // Create user object from the parameters
-          const user = {
+          const user: OAuthUser = {
             id: `oauth_${provider}_${Date.now()}`,
             username,
-            email,
+            email: email && email.trim() !== '' ? email : undefined,
             avatar: avatar || undefined,
             provider,
           };
@@ -54,7 +62,7 @@ const OAuthCallback: React.FC<OAuthCallbackProps> = ({ onLoginSuccess }) => {
     };
     
     handleCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, onLoginSuccess]);
   
   if (error) {
     return (

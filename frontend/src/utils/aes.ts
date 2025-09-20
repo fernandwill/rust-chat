@@ -96,7 +96,7 @@ export async function decryptMessageAes(encryptedMessage: string, key: CryptoKey
     // Convert to string
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
-  } catch (error) {
+  } catch {
     throw new Error('Decryption failed');
   }
 }

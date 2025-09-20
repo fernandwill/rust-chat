@@ -14,8 +14,6 @@ interface User {
 interface UserListProps {
   users: User[];
   onlineCount: number;
-  currentUser?: { username: string; avatar?: string; provider: string; email?: string; id: string } | null;
-  onLogout?: () => void;
 }
 
 const getInitials = (name: string) => {
@@ -34,9 +32,13 @@ const statusColorMap: Record<UserStatus, string> = {
   offline: '#747f8d'
 };
 
-const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, onLogout }) => {
-  const onlineUsers = users.filter(user => user.status !== 'offline');
-  const offlineUsers = users.filter(user => user.status === 'offline');
+const UserList: React.FC<UserListProps> = ({ users, onlineCount }) => {
+  const onlineUsers = users
+    .filter(user => user.status !== 'offline')
+    .sort((a, b) => a.username.localeCompare(b.username, undefined, { sensitivity: 'base' }));
+  const offlineUsers = users
+    .filter(user => user.status === 'offline')
+    .sort((a, b) => a.username.localeCompare(b.username, undefined, { sensitivity: 'base' }));
 
   return (
     <div className="user-list">

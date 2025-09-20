@@ -1,17 +1,17 @@
 // src/webserver.rs
 use axum::{
-    extract::{Query, Path},
+    Router,
+    extract::{Path, Query},
     http::StatusCode,
     response::{IntoResponse, Redirect},
     routing::get,
-    Router,
 };
 use serde::Deserialize;
 use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
 use urlencoding;
 
-use crate::auth::{OAuthProvider, get_oauth_config, exchange_code_for_token, get_user_profile};
+use crate::auth::{OAuthProvider, exchange_code_for_token, get_oauth_config, get_user_profile};
 
 #[derive(Deserialize)]
 struct OAuthCallbackQuery {
@@ -30,9 +30,9 @@ async fn initiate_oauth(Path(provider): Path<String>) -> Result<Redirect, Status
         "github" => OAuthProvider::GitHub,
         _ => return Err(StatusCode::BAD_REQUEST),
     };
-    
+
     let config = get_oauth_config(&provider).ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
-    
+
     let auth_url = match provider {
         OAuthProvider::Google => {
             format!(
@@ -40,16 +40,16 @@ async fn initiate_oauth(Path(provider): Path<String>) -> Result<Redirect, Status
                 config.client_id,
                 urlencoding::encode(&config.redirect_uri)
             )
-        },
+        }
         OAuthProvider::GitHub => {
             format!(
                 "https://github.com/login/oauth/authorize?client_id={}&redirect_uri={}&scope=user:email%20read:user",
                 config.client_id,
                 urlencoding::encode(&config.redirect_uri)
             )
-        },
+        }
     };
-    
+
     Ok(Redirect::to(&auth_url))
 }
 
@@ -63,24 +63,36 @@ async fn oauth_callback(
         "github" => OAuthProvider::GitHub,
         _ => return Err((StatusCode::BAD_REQUEST, "Invalid provider".to_string())),
     };
-    
-    let config = get_oauth_config(&provider)
-        .ok_or((StatusCode::INTERNAL_SERVER_ERROR, "OAuth not configured".to_string()))?;
-    
+
+    let config = get_oauth_config(&provider).ok_or((
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "OAuth not configured".to_string(),
+    ))?;
+
     // Exchange code for access token
     let access_token = exchange_code_for_token(&provider, &query.code, &config)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to exchange code: {}", e)))?;
-    
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to exchange code: {}", e),
+            )
+        })?;
+
     // Get user profile
     let user = get_user_profile(&provider, &access_token)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to get user profile: {}", e)))?;
-    
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to get user profile: {}", e),
+            )
+        })?;
+
     // In a real application, you would generate a JWT token here
     // For this example, we'll just return the access token
     let token = access_token;
-    
+
     // Redirect back to the frontend OAuth callback page with user data as query parameters
     let redirect_url = format!(
         "http://localhost:5173/oauth/callback?provider={}&token={}&username={}&email={}&avatar={}",
@@ -90,7 +102,7 @@ async fn oauth_callback(
         urlencoding::encode(&user.email),
         urlencoding::encode(&user.avatar.as_deref().unwrap_or(""))
     );
-    
+
     Ok(Redirect::to(&redirect_url))
 }
 
@@ -116,10 +128,10 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     // Run our application
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     println!("Web server running on http://{}", addr);
-    
+
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await?;
-        
+
     Ok(())
 }
