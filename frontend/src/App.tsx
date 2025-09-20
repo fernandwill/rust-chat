@@ -67,13 +67,24 @@ function App() {
     { id: 'coding-voice', name: 'Coding Session', type: 'voice' },
   ];
 
-  const users: User[] = [
+  const mockUsers: User[] = [
     { id: '1', username: 'RustDev', status: 'online', avatar: 'RD' },
     { id: '2', username: 'CodeMaster', status: 'online', avatar: 'CM' },
     { id: '3', username: 'ChatBot', status: 'idle', avatar: 'CB' },
     { id: '4', username: 'WebDev', status: 'dnd', avatar: 'WD' },
     { id: '5', username: 'Sleepy', status: 'offline', avatar: 'SL' },
   ];
+
+  // Add current user to the users list if authenticated
+  const users: User[] = currentUser ? [
+    ...mockUsers,
+    {
+      id: currentUser.id,
+      username: currentUser.username,
+      status: 'online' as const,
+      avatar: currentUser.avatar
+    }
+  ] : mockUsers;
 
   const onlineCount = users.filter(user => user.status !== 'offline').length;
 
@@ -265,6 +276,8 @@ function App() {
               <UserList
                 users={users}
                 onlineCount={onlineCount}
+                currentUser={currentUser}
+                onLogout={handleLogout}
               />
             </div>
           ) : (

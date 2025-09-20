@@ -14,6 +14,8 @@ interface User {
 interface UserListProps {
   users: User[];
   onlineCount: number;
+  currentUser?: { username: string; avatar?: string; provider: string; email?: string; id: string } | null;
+  onLogout?: () => void;
 }
 
 const getInitials = (name: string) => {
@@ -32,7 +34,7 @@ const statusColorMap: Record<UserStatus, string> = {
   offline: '#747f8d'
 };
 
-const UserList: React.FC<UserListProps> = ({ users, onlineCount }) => {
+const UserList: React.FC<UserListProps> = ({ users, onlineCount, currentUser, onLogout }) => {
   const onlineUsers = users.filter(user => user.status !== 'offline');
   const offlineUsers = users.filter(user => user.status === 'offline');
 
@@ -46,7 +48,11 @@ const UserList: React.FC<UserListProps> = ({ users, onlineCount }) => {
         {onlineUsers.map(user => (
           <div key={user.id} className="user-item">
             <div className="user-avatar-container">
-              <div className="user-avatar">{user.avatar || getInitials(user.username)}</div>
+              {user.avatar && user.avatar.startsWith('http') ? (
+                <img src={user.avatar} alt={user.username} className="user-avatar-image" />
+              ) : (
+                <div className="user-avatar">{user.avatar || getInitials(user.username)}</div>
+              )}
               {user.username === 'RustDev' && (
                 <Crown size={12} className="admin-crown" />
               )}

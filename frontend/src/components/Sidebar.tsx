@@ -1,6 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Hash, Volume2, Mic, MicOff, Headphones, Settings, Smile, LogOut } from 'lucide-react';
 
+// Custom deafened headphones component with diagonal cross
+const HeadphonesOff: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {/* Headphones paths */}
+    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+    {/* Diagonal cross line - same as MicOff */}
+    <path d="m2 2 20 20" />
+  </svg>
+);
+
 interface Channel {
   id: string;
   name: string;
@@ -40,6 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isDeafened, setIsDeafened] = useState(false);
   const confirmRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
 
@@ -109,6 +130,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleMicToggle = () => {
     setIsMuted(!isMuted);
     console.log(isMuted ? 'Microphone unmuted' : 'Microphone muted');
+  };
+
+  const handleDeafenToggle = () => {
+    setIsDeafened(!isDeafened);
+    // If deafened, also mute the microphone
+    if (!isDeafened) {
+      setIsMuted(true);
+    }
+    console.log(isDeafened ? 'Audio undeafened' : 'Audio deafened');
   };
 
   const handleVoiceChannelClick = (channelId: string) => {
@@ -246,8 +276,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           >
             {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
           </button>
-          <button className="control-btn" aria-label="Toggle headphones">
-            <Headphones size={16} />
+          <button 
+            className={`control-btn ${isDeafened ? 'muted' : ''}`} 
+            aria-label={isDeafened ? 'Undeafen audio' : 'Deafen audio'}
+            onClick={handleDeafenToggle}
+          >
+            {isDeafened ? <HeadphonesOff size={16} /> : <Headphones size={16} />}
           </button>
           <button
             className="control-btn"
